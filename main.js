@@ -19,6 +19,7 @@ function introduzirHistoria() {
 }
 
 function exibirStatus() {
+    console.clear();
     console.log(`========================================`);
     console.log(`Dia: ${dia}`);
     console.log(`Distância restante: ${distancia} km`);
@@ -33,7 +34,16 @@ function exibirStatus() {
 function exibirPassado() {
     console.clear();
     console.log(eventosPassados.join('\n') + '\n\n--- Status Atual ---\n');
-    exibirStatus();  // Mostra o status logo após o passado
+    // Logar status diretamente sem clear (para não sobrescrever o passado)
+    console.log(`========================================`);
+    console.log(`Dia: ${dia}`);
+    console.log(`Distância restante: ${distancia} km`);
+    console.log(`Energia: ${energia}`);
+    console.log(`Comida: ${comida}`);
+    console.log(`Dinheiro: R$${dinheiro}`);
+    console.log(`Vida: ${vida}`);
+    console.log(`Dias até a execução: ${diaExecucao - dia}`);
+    console.log(`========================================`);
 }
 
 function eventoBandidos() {
