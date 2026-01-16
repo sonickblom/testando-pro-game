@@ -9,6 +9,7 @@ let vida = 100;  // Atributo de vida adicionado
 let nomeViajante = ""; // Inicializar vazio
 let historiaContada = false; // Flag para garantir que a história seja contada apenas uma vez
 let eventosPassados = [];  // Histórico de eventos dos dias anteriores
+let eventosDiaAtual = [];  // Lista temporária para eventos do dia atual (movida para global)
 
 function introduzirHistoria() {
     if (!historiaContada) {
@@ -167,7 +168,6 @@ function pescar() {
 }
 
 function avancarDia() {
-    let eventosDiaAtual = [];  // Lista temporária para eventos do dia atual
     while (vivo && distancia > 0 && dia < diaExecucao) {
         exibirStatus();
 
