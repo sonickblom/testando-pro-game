@@ -19,7 +19,6 @@ function introduzirHistoria() {
 }
 
 function exibirStatus() {
-    console.clear();
     console.log(`========================================`);
     console.log(`Dia: ${dia}`);
     console.log(`Distância restante: ${distancia} km`);
