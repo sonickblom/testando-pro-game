@@ -8,6 +8,7 @@ let vivo = true;
 let vida = 100;  // Atributo de vida adicionado
 let nomeViajante = ""; // Inicializar vazio
 let historiaContada = false; // Flag para garantir que a história seja contada apenas uma vez
+let eventosPassados = [];  // Histórico de eventos dos dias anteriores
 
 function introduzirHistoria() {
     if (!historiaContada) {
@@ -29,9 +30,15 @@ function exibirStatus() {
     console.log(`========================================`);
 }
 
+function exibirPassado() {
+    console.clear();
+    console.log(eventosPassados.join('\n') + '\n\n--- Status Atual ---\n');
+    exibirStatus();  // Mostra o status logo após o passado
+}
+
 function eventoBandidos() {
     let bandidos = Math.floor(Math.random() * 5) + 1; // Entre 1 e 5 bandidos
-    alert(`Você encontrou ${bandidos} bandidos no caminho!`);
+    eventosDiaAtual.push(`Você encontrou ${bandidos} bandidos no caminho!`);
 
     let acao = prompt("Você quer lutar ou ser roubado? (lutar/roubado)");
 
@@ -40,7 +47,7 @@ function eventoBandidos() {
     } else {
         let dinheiroRoubado = bandidos * 10;  // Cada bandido rouba 10 dinheiros
         dinheiro = Math.max(dinheiro - dinheiroRoubado, 0);
-        alert(`Você foi roubado e perdeu R$${dinheiroRoubado}.`);
+        eventosDiaAtual.push(`Você foi roubado e perdeu R$${dinheiroRoubado}.`);
     }
 }
 
@@ -56,7 +63,7 @@ function combateBandidos(bandidos) {
                 dano = Math.floor(Math.random() * 10) + 5;  // Dano entre 5 e 15
                 energia -= 20;
             } else {
-                alert("Você não tem energia suficiente para um ataque forte!");
+                eventosDiaAtual.push("Você não tem energia suficiente para um ataque forte!");
                 continue;
             }
         } else {
@@ -64,27 +71,27 @@ function combateBandidos(bandidos) {
                 dano = Math.floor(Math.random() * 5) + 3;  // Dano entre 3 e 8
                 energia -= 10;
             } else {
-                alert("Você não tem energia suficiente para um ataque normal!");
+                eventosDiaAtual.push("Você não tem energia suficiente para um ataque normal!");
                 continue;
             }
         }
 
         vidaBandidos -= dano;
-        alert(`Você causou ${dano} de dano. A vida dos bandidos é agora ${vidaBandidos}.`);
+        eventosDiaAtual.push(`Você causou ${dano} de dano. A vida dos bandidos é agora ${vidaBandidos}.`);
 
         if (vidaBandidos > 0) {
             let danoBandidos = Math.floor(Math.random() * 5) + 5;
             vida -= danoBandidos;
-            alert(`Os bandidos causaram ${danoBandidos} de dano. Sua vida é agora ${vida}.`);
+            eventosDiaAtual.push(`Os bandidos causaram ${danoBandidos} de dano. Sua vida é agora ${vida}.`);
         }
     }
 
     if (vida <= 0) {
         vivo = false;
-        alert("Você morreu em combate...");
+        eventosDiaAtual.push("Você morreu em combate...");
     } else if (vidaBandidos <= 0) {
         dinheiro += bandidos * 10;  // Ganha 10 dinheiros por bandido derrotado
-        alert(`Você derrotou os bandidos e ganhou R$${bandidos * 10}!`);
+        eventosDiaAtual.push(`Você derrotou os bandidos e ganhou R$${bandidos * 10}!`);
     }
 }
 
@@ -95,12 +102,12 @@ function eventoComerciante() {
         if (dinheiro >= 20) {
             comida += 5;
             dinheiro -= 20;
-            alert("Você comprou 5 pontos de comida.");
+            eventosDiaAtual.push("Você comprou 5 pontos de comida.");
         } else {
-            alert("Você não tem dinheiro suficiente.");
+            eventosDiaAtual.push("Você não tem dinheiro suficiente.");
         }
     } else {
-        alert("Você decidiu não comprar nada.");
+        eventosDiaAtual.push("Você decidiu não comprar nada.");
     }
 }
 
@@ -108,7 +115,7 @@ function seguirCaminho() {
     let distanciaPercorrida = 40;  // Aumentar a distância percorrida por dia
     distancia -= distanciaPercorrida;
     energia = Math.max(energia - 10, 0);  // Perde energia ao seguir caminho, evitando valores negativos
-    alert("Você seguiu seu caminho normalmente.");
+    eventosDiaAtual.push("Você seguiu seu caminho normalmente.");
     if (Math.random() < 0.3) {
         eventoBandidos();
     }
@@ -121,11 +128,11 @@ function correr() {
     let distanciaPercorrida = 80;  // Aumentar a distância percorrida ao correr
     distancia -= distanciaPercorrida;
     energia = Math.max(energia - 20, 0);  // Perde energia ao correr, evitando valores negativos
-    alert("Você correu pelo caminho!");
+    eventosDiaAtual.push("Você correu pelo caminho!");
 
     if (Math.random() < 0.5) {
         comida = Math.max(comida - 1, 0);  // Perde comida com 50% de chance
-        alert("Você perdeu uma comida enquanto corria!");
+        eventosDiaAtual.push("Você perdeu uma comida enquanto corria!");
     }
 
     if (Math.random() < 0.4) {
@@ -135,16 +142,16 @@ function correr() {
 
 function descansar() {
     energia = Math.min(energia + 20, 100);
-    alert("Você descansou e recuperou energia.");
+    eventosDiaAtual.push("Você descansou e recuperou energia.");
 }
 
 function comer() {
     if (comida >= 5) {
         energia = Math.min(energia + 20, 100);
         comida -= 5;
-        alert("Você comeu e recuperou energia.");
+        eventosDiaAtual.push("Você comeu e recuperou energia.");
     } else {
-        alert("Você não tem comida suficiente para comer!");
+        eventosDiaAtual.push("Você não tem comida suficiente para comer!");
     }
 }
 
@@ -152,14 +159,15 @@ function pescar() {
     let peixes = Math.floor(Math.random() * 5) + 1; // Pesca de 1 a 5 peixes
     let dificuldade = 0.2 * peixes; // Aumenta a dificuldade
     if (Math.random() < dificuldade) {
-        alert(`Você conseguiu pescar ${peixes} peixe(s)!`);
+        eventosDiaAtual.push(`Você conseguiu pescar ${peixes} peixe(s)!`);
         comida += peixes * 5; // Cada peixe equivale a 5 pontos de comida
     } else {
-        alert("Você não conseguiu pescar nada.");
+        eventosDiaAtual.push("Você não conseguiu pescar nada.");
     }
 }
 
 function avancarDia() {
+    let eventosDiaAtual = [];  // Lista temporária para eventos do dia atual
     while (vivo && distancia > 0 && dia < diaExecucao) {
         exibirStatus();
 
@@ -176,40 +184,44 @@ function avancarDia() {
         } else if (acao === "5" || acao.toLowerCase() === "pescar") {
             pescar();
         } else {
-            alert("Ação inválida, tente novamente.");
+            eventosDiaAtual.push("Ação inválida, tente novamente.");
             continue;
         }
 
         dia++;
 
+        // Mover eventos do dia atual para o passado
+        eventosPassados.push(...eventosDiaAtual);
+        eventosDiaAtual = [];
+
         if (distancia <= 0) {
-            alert("Parabéns! Você chegou à capital e salvou seu irmão!");
+            eventosPassados.push("Parabéns! Você chegou à capital e salvou seu irmão!");
             break;
         }
 
         if (dia >= diaExecucao) {
-            alert("Infelizmente, você não conseguiu chegar a tempo. Seu irmão foi executado...");
+            eventosPassados.push("Infelizmente, você não conseguiu chegar a tempo. Seu irmão foi executado...");
             vivo = false;
         }
 
         if (comida <= 0) {
             energia = Math.max(energia - 5, 0);  // Reduz energia se a comida acabar, evitando valores negativos
-            alert("Você ficou sem comida e perdeu 5 de energia!");
+            eventosPassados.push("Você ficou sem comida e perdeu 5 de energia!");
         }
 
         if (energia <= 0) {
-            alert("Você não tem mais energia para continuar sua jornada.");
+            eventosPassados.push("Você não tem mais energia para continuar sua jornada.");
             vivo = false;
         }
 
         if (vida <= 0) {
-            alert("Você morreu de ferimentos...");
+            eventosPassados.push("Você morreu de ferimentos...");
             vivo = false;
         }
     }
 
     if (!vivo) {
-        alert("Fim de jogo. Você não conseguiu completar a jornada.");
+        eventosPassados.push("Fim de jogo. Você não conseguiu completar a jornada.");
     }
 }
 
