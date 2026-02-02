@@ -1,277 +1,275 @@
-let dia = 4;
+/* =======================
+   CONFIGURAÇÃO INICIAL
+======================= */
+
+let modoJogo = "historia"; // "historia" | "arcade"
+
+let dia = 4;              // usado apenas no modo história
+let diasSobrevividos = 0; // usado apenas no modo arcade
+let diaExecucao = 20;
+
+let vivo = true;
+
 let energia = 100;
-let distancia = 350;
+let vida = 100;
 let comida = 50;
 let dinheiro = 100;
-let diaExecucao = 20;
-let vivo = true;
-let vida = 100;
-let nomeViajante = "";
-let historiaContada = false;
+let distancia = 350;
 
-let modoJogo = "historia"; // "historia" ou "arcade"
-let diasSobrevividos = 0;
-
-let eventosPassados = [];
 let eventosDiaAtual = [];
+let eventosPassados = [];
+
 let climaAtual = "";
-let forcarDescanso = false;
+let proximoClima = "";
 
-// Forçar escopo global para evitar erros
-window.eventosDiaAtual = eventosDiaAtual;
-window.eventosPassados = eventosPassados;
+let avisosPescaIgnorados = 0;
 
-function introduzirHistoria() {
-    if (!historiaContada) {
-        console.log(
-            `Hoje é o quarto dia do mês. Você acaba de receber a terrível notícia ` +
-            `de que seu irmão foi condenado à forca na capital. A execução está marcada ` +
-            `para o dia ${diaExecucao}. Você precisa correr contra o tempo.`
-        );
-        historiaContada = true;
-    }
-}
+/* =======================
+   CLIMA
+======================= */
 
-function exibirStatus() {
-    try {
-        let statusTexto = `========================================\n`;
-        statusTexto += eventosPassados.join('\n') + '\n\n--- Status Atual ---\n';
-        statusTexto += `========================================\n`;
-        statusTexto += `Dia: ${dia}\n`;
-        statusTexto += `Energia: ${energia}\n`;
-        statusTexto += `Comida: ${comida}\n`;
-        statusTexto += `Dinheiro: R$${dinheiro}\n`;
-        statusTexto += `Vida: ${vida}\n`;
-        statusTexto += `Clima: ${climaAtual}\n`;
-
-        if (modoJogo === "historia") {
-            statusTexto += `Distância restante: ${distancia} km\n`;
-            statusTexto += `Dias até a execução: ${diaExecucao - dia}\n`;
-        } else {
-            statusTexto += `Modo: Arcade\n`;
-            statusTexto += `Dias sobrevividos: ${diasSobrevividos}\n`;
-        }
-
-        statusTexto += `========================================`;
-
-        const statusDiv = document.getElementById('statusDisplay');
-        if (statusDiv) {
-            statusDiv.innerText = statusTexto;
-        }
-
-        console.clear();
-        console.log(statusTexto);
-    } catch (e) {
-        console.error('Erro em exibirStatus:', e);
-    }
+function sortearClima() {
+    const r = Math.random();
+    if (r < 0.6) return "Tempo normal";
+    if (r < 0.75) return "Sol forte";
+    if (r < 0.9) return "Frio intenso";
+    return "Tempestade";
 }
 
 function gerarClima() {
-    const rand = Math.random();
-    let climaEscolhido;
+    if (!proximoClima) proximoClima = sortearClima();
 
-    if (rand < 0.7) {
-        climaEscolhido = { nome: "Tempo normal", efeito: "nenhum", popup: "Clima normal hoje." };
-    } else if (rand < 0.85) {
-        climaEscolhido = { nome: "Sol forte", efeito: "reduzEnergia", popup: "Sol forte! Você perde energia." };
-    } else {
-        climaEscolhido = { nome: "Frio intenso", efeito: "reduzEnergia", popup: "Frio intenso! Você perde energia." };
+    climaAtual = proximoClima;
+    proximoClima = sortearClima();
+
+    if (climaAtual === "Sol forte") {
+        eventosDiaAtual.push("Sol forte: correr está proibido hoje.");
     }
 
-    climaAtual = climaEscolhido.nome;
-    mostrarModal(climaEscolhido.popup);
+    if (climaAtual === "Frio intenso") {
+        eventosDiaAtual.push("Frio intenso: você consome mais comida.");
+    }
 
-    if (climaEscolhido.efeito === "reduzEnergia") {
-        energia = Math.max(energia - 5, 0);
+    if (climaAtual === "Tempestade") {
+        eventosDiaAtual.push("Tempestade: a pesca é impossível.");
     }
 }
 
-function mostrarModal(mensagem) {
-    const modal = document.getElementById('modal');
-    const modalTexto = document.getElementById('modalTexto');
+/* =======================
+   EVENTOS
+======================= */
 
-    if (modal && modalTexto) {
-        modalTexto.innerText = mensagem;
-        modal.style.display = 'block';
-        setTimeout(() => modal.style.display = 'none', 3000);
-    } else {
-        alert(mensagem);
+function eventoMercador() {
+    eventosDiaAtual.push("Você encontrou um mercador viajante.");
+
+    let escolha = prompt(
+        "(1) Perguntar sobre o clima de amanhã\n(2) Ignorar"
+    );
+
+    if (escolha === "1") {
+        eventosDiaAtual.push(
+            `Mercador: amanhã o clima será "${proximoClima}".`
+        );
     }
 }
 
 function eventoBandidos() {
-    let bandidos = Math.floor(Math.random() * 5) + 1;
-    eventosDiaAtual.push(`Você encontrou ${bandidos} bandidos!`);
+    let qtd = Math.floor(Math.random() * 3) + 2;
+    let inimigos = [];
 
-    let acao = prompt("Você quer lutar ou ser roubado? (lutar/roubado)");
+    for (let i = 0; i < qtd; i++) {
+        inimigos.push({ vida: 20, vidaMax: 20 });
+    }
 
-    if (acao.toLowerCase() === "lutar") {
-        combateBandidos(bandidos);
+    eventosDiaAtual.push(`Você foi atacado por ${qtd} bandidos!`);
+
+    let escolha = prompt("(L) Lutar\n(F) Fugir").toLowerCase();
+
+    if (escolha === "f") {
+        tentarFugir();
+        return;
+    }
+
+    combate(inimigos);
+}
+
+/* =======================
+   COMBATE
+======================= */
+
+function tentarFugir() {
+    if (energia >= 20) {
+        energia -= 20;
+        eventosDiaAtual.push("Você conseguiu fugir do combate.");
     } else {
-        let dinheiroRoubado = bandidos * 10;
-        dinheiro = Math.max(dinheiro - dinheiroRoubado, 0);
-        eventosDiaAtual.push(`Você perdeu R$${dinheiroRoubado}.`);
+        eventosDiaAtual.push("Você tentou fugir, mas está exausto!");
     }
 }
 
-function combateBandidos(bandidos) {
-    let vidaBandidos = 15;
-    let turnos = 0;
+function combate(inimigos) {
+    while (inimigos.length > 0 && energia > 0 && vida > 0) {
 
-    while (vidaBandidos > 0 && energia > 0 && vida > 0 && turnos < 10) {
-        let ataque = prompt("Ataque normal ou forte?");
-        let dano = 0;
+        let lista = inimigos.map((i, idx) =>
+            `[${idx + 1}] Bandido [${i.vida}/${i.vidaMax}]`
+        ).join("\n");
 
-        if (ataque === "forte" && energia >= 20) {
-            dano = Math.floor(Math.random() * 10) + 5;
-            energia -= 20;
-        } else if (energia >= 10) {
-            dano = Math.floor(Math.random() * 5) + 3;
-            energia -= 10;
-        } else {
+        let escolha = prompt(
+            `${lista}\n\n(A) Atacar\n(F) Fugir`
+        ).toLowerCase();
+
+        if (escolha === "f") {
+            tentarFugir();
+            return;
+        }
+
+        let alvo = parseInt(prompt("Escolha o inimigo:")) - 1;
+        if (!inimigos[alvo]) continue;
+
+        if (energia < 10) {
             eventosDiaAtual.push("Sem energia para atacar!");
             break;
         }
 
-        vidaBandidos -= dano;
+        energia -= 10;
+        let dano = Math.floor(Math.random() * 6) + 4;
+        inimigos[alvo].vida -= dano;
         eventosDiaAtual.push(`Você causou ${dano} de dano.`);
 
-        if (vidaBandidos > 0) {
-            let danoBandidos = Math.floor(Math.random() * 5) + 5;
-            vida -= danoBandidos;
-            eventosDiaAtual.push(`Você recebeu ${danoBandidos} de dano.`);
-        }
+        inimigos = inimigos.filter(i => i.vida > 0);
 
-        turnos++;
+        inimigos.forEach(() => {
+            let d = Math.floor(Math.random() * 4) + 3;
+            vida -= d;
+            eventosDiaAtual.push(`Você sofreu ${d} de dano.`);
+        });
     }
 
-    if (vida <= 0) {
-        vivo = false;
-    } else if (vidaBandidos <= 0) {
-        dinheiro += bandidos * 10;
-        eventosDiaAtual.push("Você venceu os bandidos!");
+    if (vida <= 0) vivo = false;
+    else if (inimigos.length === 0) {
+        dinheiro += 20;
+        eventosDiaAtual.push("Você venceu o combate!");
     }
 }
 
-function seguirCaminho() {
-    if (forcarDescanso) return;
+/* =======================
+   AÇÕES
+======================= */
 
-    if (modoJogo === "historia") {
-        distancia -= 40;
-    }
-
-    energia = Math.max(energia - 10, 0);
-    eventosDiaAtual.push("Você seguiu pelo caminho.");
+function seguir() {
+    distancia -= 40;
+    energia -= 10;
+    eventosDiaAtual.push("Você seguiu pela estrada.");
 
     if (Math.random() < 0.3) eventoBandidos();
+    if (Math.random() < 0.15) eventoMercador();
 }
 
 function correr() {
-    if (forcarDescanso) return;
-
-    if (modoJogo === "historia") {
-        distancia -= 80;
+    if (climaAtual === "Sol forte") {
+        eventosDiaAtual.push("O sol forte impede a corrida.");
+        return;
     }
 
-    energia = Math.max(energia - 20, 0);
+    distancia -= 80;
+    energia -= 20;
     eventosDiaAtual.push("Você correu.");
 
     if (Math.random() < 0.4) eventoBandidos();
 }
 
-function descansar() {
-    energia = Math.min(energia + 20, 100);
-    eventosDiaAtual.push("Você descansou.");
-    forcarDescanso = false;
-}
-
 function comer() {
-    if (comida >= 5) {
-        comida -= 5;
+    let custo = climaAtual === "Frio intenso" ? 10 : 5;
+
+    if (comida >= custo) {
+        comida -= custo;
         energia = Math.min(energia + 20, 100);
         eventosDiaAtual.push("Você comeu.");
+    } else {
+        eventosDiaAtual.push("Comida insuficiente.");
+
+        if (avisosPescaIgnorados < 3) {
+            eventosDiaAtual.push("Talvez pescar ajude.");
+            avisosPescaIgnorados++;
+        }
     }
 }
 
 function pescar() {
+    if (climaAtual === "Tempestade") {
+        eventosDiaAtual.push("A tempestade impede a pesca.");
+        return;
+    }
+
     let peixes = Math.floor(Math.random() * 5) + 1;
     comida += peixes * 5;
     eventosDiaAtual.push(`Você pescou ${peixes} peixe(s).`);
 }
 
-function avancarDia() {
+/* =======================
+   LOOP PRINCIPAL
+======================= */
+
+function avancarTempo() {
+    if (modoJogo === "historia") dia++;
+    else diasSobrevividos++;
+}
+
+function loopJogo() {
     while (
         vivo &&
         (modoJogo === "arcade" || distancia > 0) &&
         (modoJogo === "arcade" || dia < diaExecucao)
     ) {
-        gerarClima();
-        exibirStatus();
 
-        let acao = prompt(
-            "(1) Seguir\n(2) Correr\n(3) Descansar\n(4) Comer\n(5) Pescar"
+        gerarClima();
+
+        let textoTopo =
+            modoJogo === "historia"
+                ? `Dia ${dia} | Clima: ${climaAtual}`
+                : `Clima: ${climaAtual}`;
+
+        let escolha = prompt(
+            `${textoTopo}\n\n(1) Seguir\n(2) Correr\n(3) Comer\n(4) Pescar`
         );
 
-        if (acao === "1") seguirCaminho();
-        else if (acao === "2") correr();
-        else if (acao === "3") descansar();
-        else if (acao === "4") comer();
-        else if (acao === "5") pescar();
-        else continue;
-
-        dia++;
-
-        if (modoJogo === "arcade") {
-            diasSobrevividos++;
-        }
+        if (escolha === "1") seguir();
+        if (escolha === "2") correr();
+        if (escolha === "3") comer();
+        if (escolha === "4") pescar();
 
         eventosPassados.push(...eventosDiaAtual);
         eventosDiaAtual = [];
 
-        if (energia <= 0 || vida <= 0) {
-            vivo = false;
-        }
+        avancarTempo();
 
-        if (modoJogo === "historia" && distancia <= 0) {
-            eventosPassados.push("Você chegou à capital e salvou seu irmão!");
-            break;
-        }
-
-        if (modoJogo === "historia" && dia >= diaExecucao) {
-            eventosPassados.push("Você chegou tarde demais...");
-            vivo = false;
-        }
+        if (energia <= 0 || vida <= 0) vivo = false;
     }
 
-    if (!vivo) {
-        if (modoJogo === "arcade") {
-            eventosPassados.push(
-                `Fim de jogo! Você sobreviveu por ${diasSobrevividos} dias no modo Arcade.`
-            );
-        } else {
-            eventosPassados.push("Fim de jogo.");
-        }
-
-        exibirStatus();
+    if (!vivo && modoJogo === "arcade") {
+        alert(`Fim de jogo! Você sobreviveu por ${diasSobrevividos} dias.`);
+    } else {
+        alert(vivo ? "Você chegou à capital!" : "Você morreu na jornada.");
     }
 }
 
-function start() {
-    nomeViajante = prompt("Qual o nome do(a) viajante?");
+/* =======================
+   INICIAR
+======================= */
 
+function iniciar() {
     let escolha = prompt(
-        "Escolha o modo de jogo:\n" +
-        "1 - História\n" +
-        "2 - Arcade"
+        "Escolha o modo:\n1 - História\n2 - Arcade"
     );
 
     if (escolha === "2") {
         modoJogo = "arcade";
-        console.log("Modo Arcade iniciado!");
+        diasSobrevividos = 0;
     } else {
         modoJogo = "historia";
-        introduzirHistoria();
+        dia = 4;
     }
 
-    avancarDia();
+    loopJogo();
 }
+
+iniciar();
