@@ -1,65 +1,53 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aventura JavaScript</title>
-    <style>
-        body {
-            background-color: rgb(17, 49, 17); /* Verde escuro para simular floresta */
-            color: #E0E0E0; /* Um tom claro para o texto */
-            font-family: Arial, sans-serif;
-            text-align: left;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        .path {
-            background-color: #ffbf00; /* Cor do caminho */
-            color: black;
-            border-radius: 15px;
-            padding: 15px;
-            text-align: left;
-            width: 60%;
-            margin: 20px 0;  /* Reduzi margem para caber os botões */
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
-        }
-        #statusDisplay {
-            margin-top: 20px;
-            font-family: monospace;
-            white-space: pre;
-            background-color: #f0f0f0;
-            color: black;
-            padding: 10px;
-            border: 1px solid #ccc;
-            height: 300px;  /* Altura fixa para rolagem */
-            overflow-y: auto;
-        }
-        button {
-            margin: 5px;
-            padding: 10px;
-            font-size: 16px;
-        }
-        #modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            border: 2px solid red;  /* Estilo de alerta */
-            padding: 20px;
-            z-index: 1000;
-            color: black;
-        }
-    </style>
-</head>
-<body>
-    <h1><strong>🐱‍👤 Aventura JavaScript ⚔</strong></h1>
-    <div class="path">
-        <p>No jogo, você assume o papel de um viajante determinado a salvar seu irmão condenado à forca. A jornada começa no quarto dia do mês, e você deve percorrer 350 km até a capital antes do dia 15, enfrentando diversos desafios ao longo do caminho. A cada dia, você pode escolher entre seguir o caminho, correr, descansar ou comer. As decisões afetam sua energia, comida e vida, enquanto eventos aleatórios, como encontros com bandidos, adicionam emoção à experiência. O jogador deve gerenciar bem os recursos disponíveis para sobreviver e alcançar seu objetivo.<strong> Digite "start()" no console para começar o jogo</strong></p>
-    </div>
+<meta charset="UTF-8">
+<title>Aventura JavaScript</title>
 
-    <script src="main.js"></script>
+<style>
+body {
+    background-color: rgb(17, 49, 17);
+    color: #e0e0e0;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+#game {
+    width: 700px;
+}
+
+#log {
+    background: #111;
+    color: #0f0;
+    padding: 10px;
+    height: 300px;
+    overflow-y: auto;
+    font-family: monospace;
+    border: 2px solid #444;
+    margin-bottom: 10px;
+}
+
+#acoes button {
+    padding: 10px;
+    margin: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🐱‍👤 Aventura JavaScript ⚔</h1>
+
+<div id="game">
+    <div id="log"></div>
+    <div id="acoes"></div>
+</div>
+
+<script src="main.js"></script>
 </body>
 </html>
