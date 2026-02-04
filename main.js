@@ -2,30 +2,43 @@
    VARIÁVEIS
 ======================= */
 
-let modoJogo = "historia";
 let dia = 4;
-let diasSobrevividos = 0;
 let diaExecucao = 20;
 
-let vivo = true;
-let energia = 100;
 let vida = 100;
+let energia = 100;
 let comida = 50;
+let dinheiro = 100;
 let distancia = 350;
+let vivo = true;
 
 let climaAtual = "";
-let proximoClima = "";
+
+/* =======================
+   ELEMENTOS
+======================= */
 
 const logDiv = document.getElementById("log");
 const acoesDiv = document.getElementById("acoes");
 
 /* =======================
-   FUNÇÕES DE TELA
+   TELA
 ======================= */
 
 function print(texto) {
     logDiv.innerHTML += texto + "<br>";
     logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+function atualizarHUD() {
+    document.getElementById("hud-dia").textContent = dia;
+    document.getElementById("hud-clima").textContent = climaAtual;
+    document.getElementById("hud-vida").textContent = vida;
+    document.getElementById("hud-energia").textContent = energia;
+    document.getElementById("hud-comida").textContent = comida;
+    document.getElementById("hud-dinheiro").textContent = dinheiro;
+    document.getElementById("hud-distancia").textContent = distancia;
+    document.getElementById("hud-execucao").textContent = diaExecucao - dia;
 }
 
 function botoesPadrao() {
@@ -49,12 +62,6 @@ function sortearClima() {
     return "Tempestade";
 }
 
-function gerarClima() {
-    if (!proximoClima) proximoClima = sortearClima();
-    climaAtual = proximoClima;
-    proximoClima = sortearClima();
-}
-
 /* =======================
    AÇÕES
 ======================= */
@@ -63,20 +70,12 @@ function seguir() {
     distancia -= 40;
     energia -= 10;
     print("Você seguiu pela estrada.");
-
-    if (Math.random() < 0.3) eventoBandidos();
 }
 
 function correr() {
-    if (climaAtual === "Sol forte") {
-        print("O sol forte impede a corrida.");
-        return;
-    }
-    distancia -= 80;
     energia -= 20;
+    distancia -= 80;
     print("Você correu.");
-
-    if (Math.random() < 0.4) eventoBandidos();
 }
 
 function comer() {
@@ -85,55 +84,25 @@ function comer() {
         energia = Math.min(energia + 20, 100);
         print("Você comeu.");
     } else {
-        print("Sem comida.");
+        print("Sem comida suficiente.");
     }
 }
 
 function pescar() {
-    if (climaAtual === "Tempestade") {
-        print("A tempestade impede a pesca.");
-        return;
-    }
     let peixes = Math.floor(Math.random() * 5) + 1;
     comida += peixes * 5;
     print(`Você pescou ${peixes} peixe(s).`);
 }
 
 /* =======================
-   COMBATE SIMPLES
+   TURNO
 ======================= */
 
-function eventoBandidos() {
-    print("⚔️ Você foi atacado por bandidos!");
-    acoesDiv.innerHTML = `
-        <button onclick="lutar()">Lutar</button>
-        <button onclick="fugir()">Fugir</button>
-    `;
+function iniciarTurno() {
+    climaAtual = sortearClima();
+    print(`--- Dia ${dia} | Clima: ${climaAtual} ---`);
+    atualizarHUD();
 }
-
-function lutar() {
-    energia -= 20;
-    vida -= Math.floor(Math.random() * 15);
-
-    if (energia <= 0 || vida <= 0) {
-        vivo = false;
-        fimDeJogo();
-        return;
-    }
-
-    print("Você venceu o combate!");
-    botoesPadrao();
-}
-
-function fugir() {
-    energia -= 15;
-    print("Você conseguiu fugir.");
-    botoesPadrao();
-}
-
-/* =======================
-   CONTROLE DE TURNO
-======================= */
 
 function acao(tipo) {
     if (!vivo) return;
@@ -143,56 +112,25 @@ function acao(tipo) {
     if (tipo === "comer") comer();
     if (tipo === "pescar") pescar();
 
-    avancarTempo();
-    iniciarTurno();
-}
+    dia++;
+    atualizarHUD();
 
-function avancarTempo() {
-    if (modoJogo === "historia") dia++;
-    else diasSobrevividos++;
-}
-
-function iniciarTurno() {
-    if (!vivo) return;
-
-    gerarClima();
-    print(`--- Dia ${dia} | Clima: ${climaAtual} ---`);
-
-    if (energia <= 0 || vida <= 0 || distancia <= 0) {
+    if (vida <= 0 || energia <= 0 || distancia <= 0 || dia >= diaExecucao) {
         fimDeJogo();
+        return;
     }
+
+    iniciarTurno();
 }
 
 function fimDeJogo() {
     acoesDiv.innerHTML = "";
-    if (!vivo) print("💀 Você morreu na jornada.");
-    else print("🏆 Você chegou ao destino!");
+    print("🏁 Fim da jornada.");
 }
 
 /* =======================
    INÍCIO
 ======================= */
 
-function iniciar() {
-    print("Escolha o modo de jogo:");
-    acoesDiv.innerHTML = `
-        <button onclick="escolherModo('historia')">História</button>
-        <button onclick="escolherModo('arcade')">Arcade</button>
-    `;
-}
-
-function escolherModo(modo) {
-    modoJogo = modo;
-    dia = 4;
-    energia = 100;
-    vida = 100;
-    comida = 50;
-    distancia = 350;
-    vivo = true;
-
-    logDiv.innerHTML = "";
-    botoesPadrao();
-    iniciarTurno();
-}
-
-iniciar();
+botoesPadrao();
+iniciarTurno();
